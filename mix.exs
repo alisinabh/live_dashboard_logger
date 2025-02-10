@@ -8,7 +8,7 @@ defmodule LiveDashboardLogger.MixProject do
     [
       app: :live_dashboard_logger,
       version: @version,
-      elixir: "~> 1.18",
+      elixir: "~> 1.15",
       source_url: @source_url,
       deps: deps(),
       docs: docs(),
