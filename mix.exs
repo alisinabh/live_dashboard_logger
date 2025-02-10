@@ -37,7 +37,7 @@ defmodule LiveDashboardLogger.MixProject do
   def package do
     [
       description: "Real-time log viewing for Phoenix Live Dashboard",
-      files: ["lib", "mix.exs", "README.md", "LICENSE"],
+      files: ["lib", "mix.exs", "README.md", "LICENSE.md"],
       maintainers: ["Alisina Bahadori"],
       licenses: ["MIT"],
       links: %{"GitHub" => @source_url}
