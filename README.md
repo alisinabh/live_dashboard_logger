@@ -1,21 +1,30 @@
 # LiveLogger
 
-**TODO: Add description**
+A simple custom "Live Logs" page in [Phoenix Live Dashboard](https://github.com/phoenixframework/phoenix_live_dashboard) using a custom logger backend.
 
 ## Installation
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `live_logger` to your list of dependencies in `mix.exs`:
+Add `:live_dashboard_logger` into your dependencies.
 
 ```elixir
 def deps do
   [
-    {:live_logger, "~> 0.1.0"}
+    {:live_dashboard_logger, "~> 0.0.0"}
   ]
 end
 ```
 
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at <https://hexdocs.pm/live_logger>.
+Then add the `LiveDashboardLogger` page to `additional_pages` of `live_dashboard` in your router.
 
+```elixir
+live_dashboard "/dashboard",
+  metrics: LoggertestWeb.Telemetry,
+  additional_pages: [
+    # Add this line
+    live_logs: LiveDashboardLogger
+  ]
+```
+
+## License
+
+MIT

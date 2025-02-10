@@ -1,4 +1,4 @@
-defmodule LiveLogger.Log do
+defmodule LiveDashboardLogger.Log do
   @moduledoc """
   Simple Log struct
   """

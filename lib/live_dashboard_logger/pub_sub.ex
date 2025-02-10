@@ -1,4 +1,4 @@
-defmodule LiveLogger.PubSub do
+defmodule LiveDashboardLogger.PubSub do
   @moduledoc false
 
   @topic_prefix "logs:"

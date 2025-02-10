@@ -1,10 +1,10 @@
-defmodule LiveLogger do
+defmodule LiveDashboardLogger do
   @moduledoc """
   Logs Page for Live Dashboard
 
-  ## Add LiveLogger to Phoenix Live Dashboard
+  ## Add LiveDashboardLogger to Phoenix Live Dashboard
 
-  To add LiveLogger to Phoenix Live Dashboard, simply include it in the `additional_pages`
+  To add LiveDashboardLogger to Phoenix Live Dashboard, simply include it in the `additional_pages`
   list of `live_dashboard` route macro.
 
   ### Example
@@ -14,7 +14,7 @@ defmodule LiveLogger do
     metrics: LoggertestWeb.Telemetry,
     additional_pages: [
       # Add this line
-      live_logs: LiveLogger
+      live_logs: LiveDashboardLogger
     ]
   ```
 
@@ -22,8 +22,8 @@ defmodule LiveLogger do
   """
   use Phoenix.LiveDashboard.PageBuilder
 
-  alias LiveLogger.Log
-  alias LiveLogger.PubSub
+  alias LiveDashboardLogger.Log
+  alias LiveDashboardLogger.PubSub
 
   @log_format Logger.Formatter.compile("$time [$level] $message")
 
@@ -68,7 +68,10 @@ defmodule LiveLogger do
       :ok = PubSub.subscribe_logs(pubsub_server, topic)
 
       {:ok, _} =
-        LoggerBackends.add({LiveLogger.Backend, topic: topic, pubsub_server: pubsub_server})
+        LoggerBackends.add(
+          {LiveDashboardLogger.Backend,
+           listener: self(), topic: topic, pubsub_server: pubsub_server}
+        )
     end
 
     socket =
@@ -89,6 +92,19 @@ defmodule LiveLogger do
 
   def menu_link(_, _) do
     {:ok, "Live Logs"}
+  end
+
+  def terminate(_reason, socket) do
+    endpoint = socket.endpoint
+    pubsub_server = endpoint.config(:pubsub_server) || endpoint.__pubsub_server__()
+
+    :ok =
+      LoggerBackends.remove({
+        LiveDashboardLogger.Backend,
+        topic: socket.assigns.topic, pubsub_server: pubsub_server
+      })
+
+    IO.puts("REMOVED LOGGER BACKEND")
   end
 
   defp format_log(%Log{} = log) do

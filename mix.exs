@@ -1,9 +1,9 @@
-defmodule LiveLogger.MixProject do
+defmodule LiveDashboardLogger.MixProject do
   use Mix.Project
 
   def project do
     [
-      app: :live_logger,
+      app: :live_dashboard_logger,
       version: "0.1.0",
       elixir: "~> 1.18",
       start_permanent: Mix.env() == :prod,
