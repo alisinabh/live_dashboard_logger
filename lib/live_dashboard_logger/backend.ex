@@ -19,6 +19,18 @@ defmodule LiveDashboardLogger.Backend do
     {:ok, %__MODULE__{topic: topic, pubsub_server: server, processed_messages: 0}}
   end
 
+  def add_to_all_nodes(pubsub_server, topic, listener \\ self()) do
+    Enum.each([Node.self() | Node.list()], fn node ->
+      Node.spawn_link(node, fn ->
+        {:ok, _} =
+          LoggerBackends.add(
+            {LiveDashboardLogger.Backend,
+             listener: listener, topic: topic, pubsub_server: pubsub_server}
+          )
+      end)
+    end)
+  end
+
   @impl true
   def handle_call({:configure, _opts}, state) do
     {:ok, :ok, state}
@@ -30,7 +42,6 @@ defmodule LiveDashboardLogger.Backend do
   end
 
   def handle_event({level, _gl, {Logger, msg, ts, md}}, %__MODULE__{} = state) do
-    IO.puts("HANDLING LOG")
     log = Log.new(level, msg, ts, md)
     :ok = PubSub.publish_log(state.pubsub_server, state.topic, log)
 
@@ -43,7 +54,10 @@ defmodule LiveDashboardLogger.Backend do
 
   @impl true
   def handle_info({:DOWN, _ref, :process, _pid, _reason}, _state) do
-    IO.puts("HANDLER REMOVED")
     :remove_handler
+  end
+
+  def handle_info(_unknown, state) do
+    {:ok, state}
   end
 end

@@ -67,11 +67,7 @@ defmodule LiveDashboardLogger do
       pubsub_server = endpoint.config(:pubsub_server) || endpoint.__pubsub_server__()
       :ok = PubSub.subscribe_logs(pubsub_server, topic)
 
-      {:ok, _} =
-        LoggerBackends.add(
-          {LiveDashboardLogger.Backend,
-           listener: self(), topic: topic, pubsub_server: pubsub_server}
-        )
+      LiveDashboardLogger.Backend.add_to_all_nodes(pubsub_server, topic)
     end
 
     socket =
@@ -92,19 +88,6 @@ defmodule LiveDashboardLogger do
 
   def menu_link(_, _) do
     {:ok, "Live Logs"}
-  end
-
-  def terminate(_reason, socket) do
-    endpoint = socket.endpoint
-    pubsub_server = endpoint.config(:pubsub_server) || endpoint.__pubsub_server__()
-
-    :ok =
-      LoggerBackends.remove({
-        LiveDashboardLogger.Backend,
-        topic: socket.assigns.topic, pubsub_server: pubsub_server
-      })
-
-    IO.puts("REMOVED LOGGER BACKEND")
   end
 
   defp format_log(%Log{} = log) do
