@@ -59,7 +59,8 @@ defmodule LiveDashboardLogger.MixProject do
         "LICENSE.md": [title: "License"]
       ],
       source_url: @source_url,
-      source_ref: source_ref
+      source_ref: source_ref,
+      assets: %{"assets" => "assets"}
     ]
   end
 end

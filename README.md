@@ -2,6 +2,10 @@
 
 LiveDashboard Logger adds real-time log viewing capabilities to [Phoenix Live Dashboard](https://github.com/phoenixframework/phoenix_live_dashboard) through a custom logger backend. This allows you to monitor your application's logs directly from your dashboard, making debugging and monitoring easier.
 
+## Demo Screenshot
+
+![Live Logger Dashboard Screenshot](assets/live-logger-dashboard-screenshot.png)
+
 ## Features
 
 - Real-time log streaming in Phoenix Live Dashboard
