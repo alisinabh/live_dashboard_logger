@@ -3,7 +3,7 @@ defmodule LiveDashboardLogger.Backend do
 
   @behaviour :gen_event
 
-  defstruct [:pubsub_server, :topic, processed_messages: 0]
+  defstruct [:pubsub_server, :topic, :monitor_ref, processed_messages: 0]
 
   alias LiveDashboardLogger.Log
   alias LiveDashboardLogger.PubSub
@@ -14,9 +14,15 @@ defmodule LiveDashboardLogger.Backend do
     server = Keyword.fetch!(opts, :pubsub_server)
     listener = Keyword.fetch!(opts, :listener)
 
-    Process.monitor(listener)
+    ref = Process.monitor(listener)
 
-    {:ok, %__MODULE__{topic: topic, pubsub_server: server, processed_messages: 0}}
+    {:ok,
+     %__MODULE__{
+       topic: topic,
+       pubsub_server: server,
+       monitor_ref: ref,
+       processed_messages: 0
+     }}
   end
 
   def add_to_all_nodes(pubsub_server, topic, listener \\ self()) do
@@ -53,7 +59,7 @@ defmodule LiveDashboardLogger.Backend do
   end
 
   @impl true
-  def handle_info({:DOWN, _ref, :process, _pid, _reason}, _state) do
+  def handle_info({:DOWN, ref, :process, _pid, _reason}, %__MODULE__{monitor_ref: ref}) do
     :remove_handler
   end
 

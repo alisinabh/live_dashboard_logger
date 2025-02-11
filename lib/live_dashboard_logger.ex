@@ -36,9 +36,7 @@ defmodule LiveDashboardLogger do
         <div class="card-body">
           <div id="logger-messages" phx-update="stream">
             <%= for {id, %Log{level: level} = log} <- @streams.logs do %>
-              <pre id={id} class={"log-level#{level} text-wrap"}>
-              {format_log(log)}
-              </pre>
+              <pre id={id} class={"log-level#{level} text-wrap"}>{format_log(log)}</pre>
             <% end %>
           </div>
           <!-- Autoscroll ON/OFF checkbox -->
