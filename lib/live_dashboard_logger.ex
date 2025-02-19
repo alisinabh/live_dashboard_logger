@@ -1,3 +1,31 @@
+defmodule LiveDashboardLogger.Hooks do
+  import Phoenix.LiveView
+  import Phoenix.Component
+
+  alias Phoenix.LiveDashboard.PageBuilder
+
+  def on_mount(:default, _params, _session, socket) do
+    {:cont, PageBuilder.register_after_opening_head_tag(socket, &after_opening_head_tag/1)}
+  end
+
+  defp after_opening_head_tag(assigns) do
+    ~H"""
+    <script nonce={@csp_nonces[:script]}>
+      window.LiveDashboard.registerCustomHooks({
+        ScrollHook: {
+          updated() {
+            if (this.el.querySelector('.logger-autoscroll-checkbox').checked) {
+              const messagesElement = this.el.querySelector('#logger-messages')
+              messagesElement.scrollTop = messagesElement.scrollHeight
+            }
+          }
+        }
+      })
+    </script>
+    """
+  end
+end
+
 defmodule LiveDashboardLogger do
   @moduledoc """
   Logs Page for Live Dashboard
@@ -15,6 +43,9 @@ defmodule LiveDashboardLogger do
     additional_pages: [
       # Add this line
       live_logs: LiveDashboardLogger
+    ],
+    on_mount: [
+      LiveDashboardLogger.Hooks
     ]
   ```
 
@@ -32,7 +63,7 @@ defmodule LiveDashboardLogger do
     <div class="logs-card" data-messages-present="true">
       <h5 class="card-title">Live Logs</h5>
 
-      <div class="card mb-4" id="logger-messages-card" phx-hook="PhxRequestLoggerMessages">
+      <div class="card mb-4" id="logger-messages-card" phx-hook="ScrollHook">
         <div class="card-body">
           <div id="logger-messages" style="height: calc(100vh - 400px);" phx-update="stream">
             <%= for {id, %Log{level: level} = log} <- @streams.logs do %>
