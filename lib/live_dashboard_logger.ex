@@ -34,7 +34,7 @@ defmodule LiveDashboardLogger do
 
       <div class="card mb-4" id="logger-messages-card" phx-hook="PhxRequestLoggerMessages">
         <div class="card-body">
-          <div id="logger-messages" phx-update="stream">
+          <div id="logger-messages" style="height: calc(100vh - 400px);" phx-update="stream">
             <%= for {id, %Log{level: level} = log} <- @streams.logs do %>
               <pre id={id} class={"log-level#{level} text-wrap"}>{format_log(log)}</pre>
             <% end %>
