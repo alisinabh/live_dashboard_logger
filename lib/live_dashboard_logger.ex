@@ -22,6 +22,11 @@ defmodule LiveDashboardLogger.Hooks do
         }
       })
     </script>
+    <style>
+      .logger-wrap pre {
+        white-space: pre-wrap !important;
+      }
+    </style>
     """
   end
 end
@@ -65,13 +70,20 @@ defmodule LiveDashboardLogger do
 
       <div class="card mb-4" id="logger-messages-card" phx-hook="ScrollHook">
         <div class="card-body">
-          <div id="logger-messages" style="height: calc(100vh - 400px);" phx-update="stream">
+          <div id="logger-messages" style="height: calc(100vh - 400px);" class={if(@text_wrap_enabled, do: "logger-wrap")} phx-update="stream">
             <%= for {id, %Log{level: level} = log} <- @streams.logs do %>
-              <pre id={id} class={"log-level#{level} text-wrap"}>{format_log(log)}</pre>
+              <pre id={id} class={"log-level-#{level}"}>{format_log(log)}</pre>
             <% end %>
           </div>
-          <!-- Autoscroll ON/OFF checkbox -->
-          <div id="logger-autoscroll" class="text-right mt-3">
+          <div class="text-right mt-3">
+            <label>
+              Wrap
+              <input
+                phx-click="toggle_text_wrap"
+                checked={@text_wrap_enabled}
+                type="checkbox"
+              />
+            </label>
             <label>
               Autoscroll
               <input
@@ -101,7 +113,7 @@ defmodule LiveDashboardLogger do
 
     socket =
       socket
-      |> assign(autoscroll_enabled: true, topic: topic)
+      |> assign(autoscroll_enabled: true, text_wrap_enabled: true, topic: topic)
       |> stream(:logs, [])
 
     {:ok, socket}
@@ -113,6 +125,10 @@ defmodule LiveDashboardLogger do
 
   def handle_event("toggle_autoscroll", _params, socket) do
     {:noreply, assign(socket, :autoscroll_enabled, !socket.assigns.autoscroll_enabled)}
+  end
+
+  def handle_event("toggle_text_wrap", _params, socket) do
+    {:noreply, assign(socket, :text_wrap_enabled, !socket.assigns.text_wrap_enabled)}
   end
 
   def menu_link(_, _) do
