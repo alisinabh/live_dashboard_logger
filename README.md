@@ -34,6 +34,9 @@ live_dashboard "/dashboard",
   metrics: YourAppWeb.Telemetry,
   additional_pages: [
     live_logs: LiveDashboardLogger
+  ],
+  on_mount: [
+    LiveDashboardLogger.Hooks
   ]
 ```
 

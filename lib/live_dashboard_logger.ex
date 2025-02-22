@@ -1,3 +1,36 @@
+defmodule LiveDashboardLogger.Hooks do
+  import Phoenix.LiveView
+  import Phoenix.Component
+
+  alias Phoenix.LiveDashboard.PageBuilder
+
+  def on_mount(:default, _params, _session, socket) do
+    {:cont, PageBuilder.register_after_opening_head_tag(socket, &after_opening_head_tag/1)}
+  end
+
+  defp after_opening_head_tag(assigns) do
+    ~H"""
+    <script nonce={@csp_nonces[:script]}>
+      window.LiveDashboard.registerCustomHooks({
+        ScrollHook: {
+          updated() {
+            if (this.el.querySelector('.logger-autoscroll-checkbox').checked) {
+              const messagesElement = this.el.querySelector('#logger-messages')
+              messagesElement.scrollTop = messagesElement.scrollHeight
+            }
+          }
+        }
+      })
+    </script>
+    <style>
+      .logger-wrap pre {
+        white-space: pre-wrap !important;
+      }
+    </style>
+    """
+  end
+end
+
 defmodule LiveDashboardLogger do
   @moduledoc """
   Logs Page for Live Dashboard
@@ -15,6 +48,9 @@ defmodule LiveDashboardLogger do
     additional_pages: [
       # Add this line
       live_logs: LiveDashboardLogger
+    ],
+    on_mount: [
+      LiveDashboardLogger.Hooks
     ]
   ```
 
@@ -32,15 +68,22 @@ defmodule LiveDashboardLogger do
     <div class="logs-card" data-messages-present="true">
       <h5 class="card-title">Live Logs</h5>
 
-      <div class="card mb-4" id="logger-messages-card" phx-hook="PhxRequestLoggerMessages">
+      <div class="card mb-4" id="logger-messages-card" phx-hook="ScrollHook">
         <div class="card-body">
-          <div id="logger-messages" phx-update="stream">
+          <div id="logger-messages" style="height: calc(100vh - 400px);" class={if(@text_wrap_enabled, do: "logger-wrap")} phx-update="stream">
             <%= for {id, %Log{level: level} = log} <- @streams.logs do %>
-              <pre id={id} class={"log-level#{level} text-wrap"}>{format_log(log)}</pre>
+              <pre id={id} class={"log-level-#{level}"}>{format_log(log)}</pre>
             <% end %>
           </div>
-          <!-- Autoscroll ON/OFF checkbox -->
-          <div id="logger-autoscroll" class="text-right mt-3">
+          <div class="text-right mt-3">
+            <label>
+              Wrap
+              <input
+                phx-click="toggle_text_wrap"
+                checked={@text_wrap_enabled}
+                type="checkbox"
+              />
+            </label>
             <label>
               Autoscroll
               <input
@@ -70,7 +113,7 @@ defmodule LiveDashboardLogger do
 
     socket =
       socket
-      |> assign(autoscroll_enabled: true, topic: topic)
+      |> assign(autoscroll_enabled: true, text_wrap_enabled: true, topic: topic)
       |> stream(:logs, [])
 
     {:ok, socket}
@@ -82,6 +125,10 @@ defmodule LiveDashboardLogger do
 
   def handle_event("toggle_autoscroll", _params, socket) do
     {:noreply, assign(socket, :autoscroll_enabled, !socket.assigns.autoscroll_enabled)}
+  end
+
+  def handle_event("toggle_text_wrap", _params, socket) do
+    {:noreply, assign(socket, :text_wrap_enabled, !socket.assigns.text_wrap_enabled)}
   end
 
   def menu_link(_, _) do
