@@ -1,7 +1,7 @@
 defmodule LiveDashboardLogger.MixProject do
   use Mix.Project
 
-  @version "0.0.2"
+  @version "0.0.3"
   @source_url "https://github.com/alisinabh/live_dashboard_logger"
 
   def project do
